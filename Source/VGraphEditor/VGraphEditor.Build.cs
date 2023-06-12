@@ -25,8 +25,8 @@ public class VGraphEditor : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
-				// ... add other public dependencies that you statically link with here ...
+				"Core", 
+				"VGraphRuntime",
 			}
 			);
 			
@@ -38,9 +38,9 @@ public class VGraphEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"VGraphRuntime",
-				"UnrealEd"
-				// ... add private dependencies that you statically link with here ...	
+				"UnrealEd", 
+				"EditorStyle",
+				"GraphEditor"
 			}
 			);
 		
