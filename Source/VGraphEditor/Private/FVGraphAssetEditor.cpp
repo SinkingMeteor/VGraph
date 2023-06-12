@@ -9,6 +9,8 @@
 #include "GraphEditorActions.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "LocalizationModule.h"
+#include "VGraphEditorSettings.h"
+#include "Framework/Commands/GenericCommands.h"
 
 #define LOCTEXT_NAMESPACE "AssetEditor_VGraph"
 
@@ -21,13 +23,10 @@ namespace
 	const FName VGraphEditorSettingsID(TEXT("GenericGraphEditorSettings"));
 }
 
-FVGraphAssetEditor::FVGraphAssetEditor()
-{
-}
-
-FVGraphAssetEditor::~FVGraphAssetEditor()
-{
-}
+FVGraphAssetEditor::FVGraphAssetEditor() :
+	CurrentGraph(nullptr),
+	EditorSettings(NewObject<UVGraphEditorSettings>())
+{}
 
 void FVGraphAssetEditor::CreateEdGraph()
 {
@@ -54,9 +53,10 @@ void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<ITo
 		//GEditor->RegisterForUndo(this);
 	}
 
+	FGenericCommands::Register();
 	FGraphEditorCommands::Register();
 	
-	//BindGraphCommands();
+	BindGraphCommands();
 	CreateInternalWidgets();
 
 	const TSharedRef<FTabManager::FLayout> StandaloneDefaultLayout = FTabManager::NewLayout("Standalone_VGraphEditor_Layout_v1")
@@ -184,6 +184,12 @@ TSharedRef<SDockTab> FVGraphAssetEditor::SpawnTab_Settings(const FSpawnTabArgs& 
 		];
 }
 
+void FVGraphAssetEditor::AddReferencedObjects(FReferenceCollector& Collector)
+{
+	Collector.AddReferencedObject(CurrentGraph);
+	Collector.AddReferencedObject(CurrentGraph->EditorGraph);
+}
+
 void FVGraphAssetEditor::CreateInternalWidgets()
 {
 	ViewportWidget = CreateViewportWidget();
@@ -198,7 +204,7 @@ void FVGraphAssetEditor::CreateInternalWidgets()
 	PropertyWidget->OnFinishedChangingProperties().AddSP(this, &FVGraphAssetEditor::OnFinishedChangingProperties);
 
 	EditorSettingsWidget = PropertyModule.CreateDetailView(Args);
-	//EditorSettingsWidget->SetObject(GenricGraphEditorSettings);
+	EditorSettingsWidget->SetObject(EditorSettings);
 }
 
 void FVGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& Objects)
@@ -211,6 +217,9 @@ void FVGraphAssetEditor::OnNodeDoubleClicked(UEdGraphNode* EdGraphNode)
 
 void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent)
 {
+	if(!CurrentGraph) return;
+
+	CurrentGraph->EditorGraph->GetSchema()->ForceVisualizationCacheClear();
 }
 
 TSharedRef<SGraphEditor> FVGraphAssetEditor::CreateViewportWidget()
@@ -232,4 +241,8 @@ TSharedRef<SGraphEditor> FVGraphAssetEditor::CreateViewportWidget()
 		.GraphEvents(InEvents)
 		.AutoExpandActionMenu(true)
 		.ShowGraphStateOverlay(false);
+}
+
+void FVGraphAssetEditor::BindGraphCommands()
+{
 }
