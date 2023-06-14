@@ -25,6 +25,7 @@ protected:
 	TSharedPtr<SGraphEditor> ViewportWidget;
 	TSharedPtr<IDetailsView> PropertyWidget;
 	TSharedPtr<IDetailsView> EditorSettingsWidget;
+	TSharedPtr<FUICommandList> GraphEditorCommands;
 	
 	UVGraphEditorSettings* EditorSettings;
 
@@ -40,7 +41,28 @@ private:
 
 	void OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent);
 	void CreateInternalWidgets();
+	
 	void OnSelectedNodesChanged(const TSet<UObject*>& Objects);
 	void OnNodeDoubleClicked(UEdGraphNode* EdGraphNode);
+
+	void CreateCommandList();
 	TSharedRef<SGraphEditor> CreateViewportWidget();
+
+	void SelectAllNodes();
+	bool CanSelectAllNodes() const;
+
+	void DeleteSelectedNodes();
+	bool CanDeleteNodes() const;
+
+	void CopySelectedNodes();
+	bool CanCopyNodes() const;
+
+	void PasteNodes();
+	bool CanPasteNodes() const;
+
+	void CutSelectedNodes();
+	bool CanCutNodes() const;
+
+	void DuplicateNodes();
+	bool CanDuplicateNodes() const;
 };

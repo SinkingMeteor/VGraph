@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Nodes/VBaseNode.h"
 #include "UObject/Object.h"
 #include "VGraph.generated.h"
 
@@ -15,10 +16,20 @@ class VGRAPHRUNTIME_API UVGraph : public UObject
 {
 	GENERATED_BODY()
 
-public:
+private:
+	UPROPERTY(Instanced)
+	TObjectPtr<UVBaseNode> StartNode;
+	UPROPERTY(Instanced)
+	TArray<TObjectPtr<UVBaseNode>> Nodes;
+
 #if WITH_EDITORONLY_DATA
+public:
+	UEdGraph* GetEditorGraph() const { return EditorGraph; }
+	UEdGraph*& GetEditorGraphRef() { return EditorGraph; }
+	void SetEditorGraph(UEdGraph* InEditorGraph) { EditorGraph = InEditorGraph; }
+private:
 	UPROPERTY()
-	class UEdGraph* EditorGraph;
+	UEdGraph* EditorGraph;
 #endif
-	
+
 };

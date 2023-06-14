@@ -30,15 +30,13 @@ FVGraphAssetEditor::FVGraphAssetEditor() :
 
 void FVGraphAssetEditor::CreateEdGraph()
 {
-	if (CurrentGraph->EditorGraph == nullptr)
-	{
-		CurrentGraph->EditorGraph = CastChecked<UEdVGraph>(FBlueprintEditorUtils::CreateNewGraph(CurrentGraph, NAME_None, UEdVGraph::StaticClass(), UEdVGraphSchema::StaticClass()));
-		CurrentGraph->EditorGraph->bAllowDeletion = false;
+	if (CurrentGraph->GetEditorGraph()) return;
 
-		// Give the schema a chance to fill out any required nodes (like the results node)
-		const UEdGraphSchema* Schema = CurrentGraph->EditorGraph->GetSchema();
-		Schema->CreateDefaultNodesForGraph(*CurrentGraph->EditorGraph);
-	}
+	CurrentGraph->SetEditorGraph(CastChecked<UEdVGraph>(FBlueprintEditorUtils::CreateNewGraph(CurrentGraph, NAME_None, UEdVGraph::StaticClass(), UEdVGraphSchema::StaticClass())));
+	CurrentGraph->GetEditorGraph()->bAllowDeletion = false;
+
+	const UEdGraphSchema* Schema = CurrentGraph->GetEditorGraph()->GetSchema();
+	Schema->CreateDefaultNodesForGraph(*CurrentGraph->GetEditorGraph());
 }
 
 void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<IToolkitHost> InToolkitHost, UVGraph* Graph)
@@ -187,7 +185,7 @@ TSharedRef<SDockTab> FVGraphAssetEditor::SpawnTab_Settings(const FSpawnTabArgs& 
 void FVGraphAssetEditor::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	Collector.AddReferencedObject(CurrentGraph);
-	Collector.AddReferencedObject(CurrentGraph->EditorGraph);
+	Collector.AddReferencedObject(CurrentGraph->GetEditorGraphRef());
 }
 
 void FVGraphAssetEditor::CreateInternalWidgets()
@@ -219,7 +217,30 @@ void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEven
 {
 	if(!CurrentGraph) return;
 
-	CurrentGraph->EditorGraph->GetSchema()->ForceVisualizationCacheClear();
+	CurrentGraph->GetEditorGraph()->GetSchema()->ForceVisualizationCacheClear();
+}
+
+void FVGraphAssetEditor::CreateCommandList()
+{
+	GraphEditorCommands = MakeShared<FUICommandList>();
+	GraphEditorCommands->MapAction(FGenericCommands::Get().SelectAll,
+		FExecuteAction::CreateSP(this, &FVGraphAssetEditor::SelectAllNodes),
+		FCanExecuteAction::CreateSP(this, &FVGraphAssetEditor::CanSelectAllNodes));
+	GraphEditorCommands->MapAction(FGenericCommands::Get().Delete,
+	FExecuteAction::CreateSP(this, &FVGraphAssetEditor::DeleteSelectedNodes),
+		FCanExecuteAction::CreateSP(this, &FVGraphAssetEditor::CanDeleteNodes));
+	GraphEditorCommands->MapAction(FGenericCommands::Get().Copy,
+	FExecuteAction::CreateSP(this, &FVGraphAssetEditor::CopySelectedNodes),
+	FCanExecuteAction::CreateSP(this, &FVGraphAssetEditor::CanCopyNodes));
+	GraphEditorCommands->MapAction(FGenericCommands::Get().Paste,
+		FExecuteAction::CreateSP(this, &FVGraphAssetEditor::PasteNodes),
+		FCanExecuteAction::CreateSP(this, &FVGraphAssetEditor::CanPasteNodes));
+	GraphEditorCommands->MapAction(FGenericCommands::Get().Cut,
+		FExecuteAction::CreateSP(this, &FVGraphAssetEditor::CutSelectedNodes),
+		FCanExecuteAction::CreateSP(this, &FVGraphAssetEditor::CanCutNodes));
+	GraphEditorCommands->MapAction(FGenericCommands::Get().Duplicate,
+		FExecuteAction::CreateSP(this, &FVGraphAssetEditor::DuplicateNodes),
+		FCanExecuteAction::CreateSP(this, &FVGraphAssetEditor::CanDuplicateNodes));
 }
 
 TSharedRef<SGraphEditor> FVGraphAssetEditor::CreateViewportWidget()
@@ -227,20 +248,74 @@ TSharedRef<SGraphEditor> FVGraphAssetEditor::CreateViewportWidget()
 	FGraphAppearanceInfo AppearanceInfo;
 	AppearanceInfo.CornerText = LOCTEXT("AppearanceCornerText_VGraph", "VGraph");
 
-	//CreateCommandList();
+	CreateCommandList();
 
 	SGraphEditor::FGraphEditorEvents InEvents;
 	InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FVGraphAssetEditor::OnSelectedNodesChanged);
 	InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FVGraphAssetEditor::OnNodeDoubleClicked);
 
 	return SNew(SGraphEditor)
-		//.AdditionalCommands(GraphEditorCommands)
+		.AdditionalCommands(GraphEditorCommands)
 		.IsEditable(true)
 		.Appearance(AppearanceInfo)
-		.GraphToEdit(CurrentGraph->EditorGraph)
+		.GraphToEdit(CurrentGraph->GetEditorGraph())
 		.GraphEvents(InEvents)
 		.AutoExpandActionMenu(true)
 		.ShowGraphStateOverlay(false);
+}
+
+void FVGraphAssetEditor::SelectAllNodes()
+{
+}
+
+bool FVGraphAssetEditor::CanSelectAllNodes() const
+{
+	return true;
+}
+
+void FVGraphAssetEditor::DeleteSelectedNodes()
+{
+}
+
+bool FVGraphAssetEditor::CanDeleteNodes() const
+{
+	return true;
+}
+
+void FVGraphAssetEditor::CopySelectedNodes()
+{
+}
+
+bool FVGraphAssetEditor::CanCopyNodes() const
+{
+	return true;
+}
+
+void FVGraphAssetEditor::PasteNodes()
+{
+}
+
+bool FVGraphAssetEditor::CanPasteNodes() const
+{
+	return true;
+}
+
+void FVGraphAssetEditor::CutSelectedNodes()
+{
+}
+
+bool FVGraphAssetEditor::CanCutNodes() const
+{
+	return true;
+}
+
+void FVGraphAssetEditor::DuplicateNodes()
+{
+}
+
+bool FVGraphAssetEditor::CanDuplicateNodes() const
+{
+	return true;
 }
 
 void FVGraphAssetEditor::BindGraphCommands()
