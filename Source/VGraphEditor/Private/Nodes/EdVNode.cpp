@@ -1,14 +1,14 @@
 ﻿// Snake Game
 
 
-#include "Nodes/VGraphBaseNode.h"
+#include "Nodes/EdVNode.h"
 
-UVGraphBaseNode::UVGraphBaseNode()
+UEdVNode::UEdVNode()
 {
 	bCanRenameNode = true;
 }
 
-void UVGraphBaseNode::AllocateDefaultPins()
+void UEdVNode::AllocateDefaultPins()
 {
 	CreatePin(EEdGraphPinDirection::EGPD_Input, "MultipleNodes", FName{}, TEXT("In"));
 	CreatePin(EEdGraphPinDirection::EGPD_Output, "MultipleNodes", FName{}, TEXT("Out"));

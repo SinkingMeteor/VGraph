@@ -24,33 +24,24 @@ namespace
 }
 
 FVGraphAssetEditor::FVGraphAssetEditor() :
-	CurrentGraph(nullptr),
+	EditorGraph(nullptr),
 	EditorSettings(NewObject<UVGraphEditorSettings>())
 {}
 
-void FVGraphAssetEditor::CreateEdGraph()
+void FVGraphAssetEditor::CreateEdGraph(UVGraph* Graph)
 {
-	if (CurrentGraph->GetEditorGraph()) return;
+	EditorGraph = MakeShareable(CastChecked<UEdVGraph>(FBlueprintEditorUtils::CreateNewGraph(Graph, NAME_None, UEdVGraph::StaticClass(), UEdVGraphSchema::StaticClass())));
+	EditorGraph->SetVGraph(Graph);
+	EditorGraph->bAllowDeletion = false;
 
-	CurrentGraph->SetEditorGraph(CastChecked<UEdVGraph>(FBlueprintEditorUtils::CreateNewGraph(CurrentGraph, NAME_None, UEdVGraph::StaticClass(), UEdVGraphSchema::StaticClass())));
-	CurrentGraph->GetEditorGraph()->bAllowDeletion = false;
-
-	const UEdGraphSchema* Schema = CurrentGraph->GetEditorGraph()->GetSchema();
-	Schema->CreateDefaultNodesForGraph(*CurrentGraph->GetEditorGraph());
+	const UEdGraphSchema* Schema = EditorGraph->GetSchema();
+	Schema->CreateDefaultNodesForGraph(*EditorGraph);
 }
 
 void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<IToolkitHost> InToolkitHost, UVGraph* Graph)
 {
-	CurrentGraph = Graph;
-
-	CreateEdGraph();
+	CreateEdGraph(Graph);
 	
-	if(false)
-	{
-		Graph->SetFlags(EObjectFlags::RF_Transactional);
-		//GEditor->RegisterForUndo(this);
-	}
-
 	FGenericCommands::Register();
 	FGraphEditorCommands::Register();
 	
@@ -58,36 +49,40 @@ void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<ITo
 	CreateInternalWidgets();
 
 	const TSharedRef<FTabManager::FLayout> StandaloneDefaultLayout = FTabManager::NewLayout("Standalone_VGraphEditor_Layout_v1")
-		->AddArea
-		(
-			FTabManager::NewPrimaryArea()
-			->SetOrientation(Orient_Horizontal)
-			->Split
+			->AddArea
 			(
-				FTabManager::NewStack()
-				->SetSizeCoefficient(0.65f)
-				->SetHideTabWell(true)
-				->AddTab(VGraphViewportID, ETabState::OpenedTab)
-			)
-			->Split
-			(
-				FTabManager::NewStack()
-				->SetSizeCoefficient(0.225f)
-				->SetHideTabWell(true)
-				->AddTab(VGraphPropertyID, ETabState::OpenedTab)
-			)
-			->Split
-			(
-				FTabManager::NewStack()
-				->SetSizeCoefficient(0.125f)
-				->SetHideTabWell(true)
-				->AddTab(VGraphEditorSettingsID, ETabState::OpenedTab)
-			)
-		);
-
+				FTabManager::NewPrimaryArea()->SetOrientation(Orient_Vertical)
+				->Split
+				(
+					FTabManager::NewSplitter()->SetOrientation(Orient_Horizontal)->SetSizeCoefficient(0.9f)
+					->Split
+					(
+						FTabManager::NewStack()
+						->SetSizeCoefficient(0.65f)
+						->AddTab(VGraphViewportID, ETabState::OpenedTab)->SetHideTabWell(true)
+					)
+					->Split
+					(
+						FTabManager::NewSplitter()->SetOrientation(Orient_Vertical)
+						->Split
+						(
+							FTabManager::NewStack()
+							->SetSizeCoefficient(0.7f)
+							->AddTab(VGraphPropertyID, ETabState::OpenedTab)->SetHideTabWell(true)
+						)
+						->Split
+						(
+							FTabManager::NewStack()
+							->SetSizeCoefficient(0.3f)
+							->AddTab(VGraphEditorSettingsID, ETabState::OpenedTab)
+						)
+					)
+				)
+			);
+	
 	const bool bCreateDefaultStandaloneMenu = true;
 	const bool bCreateDefaultToolbar = true;
-	FAssetEditorToolkit::InitAssetEditor(Mode, InToolkitHost, VGraphEditorAppName, StandaloneDefaultLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, CurrentGraph, false);
+	FAssetEditorToolkit::InitAssetEditor(Mode, InToolkitHost, VGraphEditorAppName, StandaloneDefaultLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, EditorGraph->GetVGraph(), false);
 }
 
 void FVGraphAssetEditor::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
@@ -182,12 +177,6 @@ TSharedRef<SDockTab> FVGraphAssetEditor::SpawnTab_Settings(const FSpawnTabArgs& 
 		];
 }
 
-void FVGraphAssetEditor::AddReferencedObjects(FReferenceCollector& Collector)
-{
-	Collector.AddReferencedObject(CurrentGraph);
-	Collector.AddReferencedObject(CurrentGraph->GetEditorGraphRef());
-}
-
 void FVGraphAssetEditor::CreateInternalWidgets()
 {
 	ViewportWidget = CreateViewportWidget();
@@ -198,7 +187,7 @@ void FVGraphAssetEditor::CreateInternalWidgets()
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	PropertyWidget = PropertyModule.CreateDetailView(Args);
-	PropertyWidget->SetObject(CurrentGraph);
+	PropertyWidget->SetObject(EditorGraph->GetVGraph());
 	PropertyWidget->OnFinishedChangingProperties().AddSP(this, &FVGraphAssetEditor::OnFinishedChangingProperties);
 
 	EditorSettingsWidget = PropertyModule.CreateDetailView(Args);
@@ -215,9 +204,9 @@ void FVGraphAssetEditor::OnNodeDoubleClicked(UEdGraphNode* EdGraphNode)
 
 void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent)
 {
-	if(!CurrentGraph) return;
+	if(!EditorGraph->GetVGraph()) return;
 
-	CurrentGraph->GetEditorGraph()->GetSchema()->ForceVisualizationCacheClear();
+	EditorGraph->GetSchema()->ForceVisualizationCacheClear();
 }
 
 void FVGraphAssetEditor::CreateCommandList()
@@ -258,7 +247,7 @@ TSharedRef<SGraphEditor> FVGraphAssetEditor::CreateViewportWidget()
 		.AdditionalCommands(GraphEditorCommands)
 		.IsEditable(true)
 		.Appearance(AppearanceInfo)
-		.GraphToEdit(CurrentGraph->GetEditorGraph())
+		.GraphToEdit(EditorGraph.Get())
 		.GraphEvents(InEvents)
 		.AutoExpandActionMenu(true)
 		.ShowGraphStateOverlay(false);

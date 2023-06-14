@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EdVGraph.h"
 #include "VGraph.h"
 #include "VGraphEditorSettings.h"
 
 class IDetailsView;
 
-class VGRAPHEDITOR_API FVGraphAssetEditor : public FAssetEditorToolkit, public FNotifyHook, public FGCObject
+class VGRAPHEDITOR_API FVGraphAssetEditor : public FAssetEditorToolkit, public FNotifyHook
 {
 public:
 	FVGraphAssetEditor();
@@ -26,18 +27,17 @@ protected:
 	TSharedPtr<IDetailsView> PropertyWidget;
 	TSharedPtr<IDetailsView> EditorSettingsWidget;
 	TSharedPtr<FUICommandList> GraphEditorCommands;
-	
+
 	UVGraphEditorSettings* EditorSettings;
 
 	TSharedRef<SDockTab> SpawnTab_GraphCanvas(const FSpawnTabArgs& SpawnTabArgs);
 	TSharedRef<SDockTab> SpawnTab_Properties(const FSpawnTabArgs& SpawnTabArgs);
 	TSharedRef<SDockTab> SpawnTab_Settings(const FSpawnTabArgs& SpawnTabArgs);
 
-	virtual void AddReferencedObjects( FReferenceCollector& Collector ) override;
-	void CreateEdGraph();
+	void CreateEdGraph(UVGraph* Graph);
 	void BindGraphCommands();
 private:
-	UVGraph* CurrentGraph;
+	TSharedPtr<UEdVGraph> EditorGraph;
 
 	void OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent);
 	void CreateInternalWidgets();

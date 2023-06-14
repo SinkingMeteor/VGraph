@@ -15,21 +15,11 @@ UCLASS(Blueprintable)
 class VGRAPHRUNTIME_API UVGraph : public UObject
 {
 	GENERATED_BODY()
-
-private:
-	UPROPERTY(Instanced)
-	TObjectPtr<UVBaseNode> StartNode;
-	UPROPERTY(Instanced)
-	TArray<TObjectPtr<UVBaseNode>> Nodes;
-
-#if WITH_EDITORONLY_DATA
 public:
-	UEdGraph* GetEditorGraph() const { return EditorGraph; }
-	UEdGraph*& GetEditorGraphRef() { return EditorGraph; }
-	void SetEditorGraph(UEdGraph* InEditorGraph) { EditorGraph = InEditorGraph; }
+	void AddNode(UVBaseNode* Node);
 private:
-	UPROPERTY()
-	UEdGraph* EditorGraph;
-#endif
-
+	UPROPERTY(Instanced)
+	UVBaseNode* StartNode;
+	UPROPERTY(Instanced)
+	TArray<UVBaseNode*> Nodes;
 };

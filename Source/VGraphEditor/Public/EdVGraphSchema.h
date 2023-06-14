@@ -3,8 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
+#include "Nodes/EdVNode.h"
+#include "Nodes/VBaseNode.h"
 #include "EdVGraphSchema.generated.h"
+
+USTRUCT()
+struct VGRAPHEDITOR_API FVGraphSchemaAction_NewNode : public FEdGraphSchemaAction
+{
+	GENERATED_BODY()
+
+public:
+	FVGraphSchemaAction_NewNode() = default;
+	FVGraphSchemaAction_NewNode(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, FText InKeywords = FText(), int32 InSectionID = 0);
+	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode) override;
+	void SetTemplate(TSubclassOf<UVBaseNode> InNodeTemplate) { NodeTemplate = InNodeTemplate; }
+private:
+	 TSubclassOf<UVBaseNode> NodeTemplate;
+};
 
 UCLASS()
 class VGRAPHEDITOR_API UEdVGraphSchema : public UEdGraphSchema
