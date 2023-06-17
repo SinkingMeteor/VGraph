@@ -40,7 +40,8 @@ public class VGraphEditor : ModuleRules
 				"SlateCore",
 				"UnrealEd", 
 				"EditorStyle",
-				"GraphEditor"
+				"GraphEditor",
+				"ToolMenus"
 			}
 			);
 		

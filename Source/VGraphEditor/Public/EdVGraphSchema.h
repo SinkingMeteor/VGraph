@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Nodes/EdVNode.h"
 #include "Nodes/VBaseNode.h"
 #include "EdVGraphSchema.generated.h"
 
@@ -25,7 +24,13 @@ UCLASS()
 class VGRAPHEDITOR_API UEdVGraphSchema : public UEdGraphSchema
 {
 	GENERATED_BODY()
+	
 private:
 	virtual void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
+	virtual void GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const override;
+	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const override;
 	virtual EGraphType GetGraphType(const UEdGraph* TestEdGraph) const override { return EGraphType::GT_StateMachine; }
+	virtual FLinearColor GetPinTypeColor(const FEdGraphPinType& PinType) const override { return FColor::Yellow; }
+	virtual bool ShouldHidePinDefaultValue(UEdGraphPin* Pin) const override { return true; }
+	
 };

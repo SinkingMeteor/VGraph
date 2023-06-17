@@ -17,9 +17,4 @@ public:
 	UEdVNode();
 	virtual void AllocateDefaultPins() override;
 	UEdVGraph* GetVGraph() const { return Cast<UEdVGraph>(GetGraph()); }
-	void SetNode(UVBaseNode* InNode) { Node = InNode; }
-	UVBaseNode* GetNode() const { return Node; }
-private:
-	UPROPERTY(VisibleAnywhere, Instanced)
-	UVBaseNode* Node;
 };

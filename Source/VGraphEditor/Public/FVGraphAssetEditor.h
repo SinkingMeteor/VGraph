@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "EdVGraph.h"
 #include "VGraph.h"
+#include "UObject/GCObject.h"
 #include "VGraphEditorSettings.h"
 
 class IDetailsView;
 
-class VGRAPHEDITOR_API FVGraphAssetEditor : public FAssetEditorToolkit, public FNotifyHook
+class VGRAPHEDITOR_API FVGraphAssetEditor : public FAssetEditorToolkit, public FGCObject, public FNotifyHook
 {
 public:
 	FVGraphAssetEditor();
@@ -21,6 +22,7 @@ public:
 	virtual FText GetBaseToolkitName() const override;
 	virtual FString GetWorldCentricTabPrefix() const override;
 	virtual FLinearColor GetWorldCentricTabColorScale() const override;
+	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 
 protected:
 	TSharedPtr<SGraphEditor> ViewportWidget;
@@ -37,7 +39,7 @@ protected:
 	void CreateEdGraph(UVGraph* Graph);
 	void BindGraphCommands();
 private:
-	TSharedPtr<UEdVGraph> EditorGraph;
+	UVGraph* CurrentGraph;
 
 	void OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent);
 	void CreateInternalWidgets();

@@ -2,10 +2,11 @@
 
 
 #include "EdVGraphSchema.h"
-
 #include "EdVGraph.h"
+#include "GraphEditorActions.h"
 #include "VGraph.h"
-#include "Nodes/VStartNode.h"
+#include "Framework/Commands/GenericCommands.h"
+#include "Nodes/EdVNode.h"
 
 #define LOCTEXT_NAMESPACE "AssetSchema_VGraph"
 
@@ -27,13 +28,16 @@ UEdGraphNode* FVGraphSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, 
 		FromPin->Modify();
 
 	UEdVGraph* EdVGraph = Cast<UEdVGraph>(ParentGraph);
-	UVGraph* VGraph = EdVGraph->GetVGraph();
+	UVGraph* VGraph = CastChecked<UVGraph>(EdVGraph->GetOuter());
 
 	UVBaseNode* VNode = NewObject<UVBaseNode>(VGraph, NodeTemplate);
 	VGraph->AddNode(VNode);
 	
 	UEdVNode* EdVNode = NewObject<UEdVNode>(ParentGraph);
-	EdVNode->SetNode(VNode);
+
+	VNode->EditorNode = EdVNode;
+	
+	EdVNode->Rename(ToCStr(VNode->GetName()));
 	EdVGraph->AddNode(EdVNode, true, bSelectNewNode);
 	EdVGraph->NotifyGraphChanged();
 	
@@ -47,7 +51,8 @@ UEdGraphNode* FVGraphSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, 
 
 	EdVGraph->SetFlags(RF_Transactional);
 	EdVNode->SetFlags(RF_Transactional);
-
+	EdVNode->AutowireNewNode(FromPin);
+	
 	return EdVNode;
 }
 
@@ -55,10 +60,53 @@ void UEdVGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& ContextMe
 {
 	Super::GetGraphContextActions(ContextMenuBuilder);
 
-	TSharedPtr<FVGraphSchemaAction_NewNode> NewNodeSchemaAction = MakeShared<FVGraphSchemaAction_NewNode>(
-		LOCTEXT("VGraphNodeAction_Category", "Create VGraph Node"),
-		LOCTEXT("VGraphNodeAction_MenuDesc", "Create VGraph Node"),
-		LOCTEXT("VGraphNodeAction_Tooltip", "Add here"), 0);
-	NewNodeSchemaAction->SetTemplate(UVStartNode::StaticClass());
-	ContextMenuBuilder.AddAction(NewNodeSchemaAction);
+	FText CreateCategory = LOCTEXT("VGraphNodeAction_Category", "Create");
+	FText Tooltip = LOCTEXT("VGraphNodeAction_Tooltip", "Add here");
+	
+	for (TObjectIterator<UClass> It; It; ++It)
+	{
+		if (It->IsChildOf(UVBaseNode::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
+		{
+			TSubclassOf<UVBaseNode> NodeType = *It;
+			FText NodeName = NodeType.GetDefaultObject()->GetNodeName();
+			
+			TSharedPtr<FVGraphSchemaAction_NewNode> NewNodeSchemaAction = MakeShared<FVGraphSchemaAction_NewNode>(CreateCategory, NodeName, Tooltip, 0);
+			NewNodeSchemaAction->SetTemplate(NodeType);
+			ContextMenuBuilder.AddAction(NewNodeSchemaAction);
+		}
+	}
+}
+
+void UEdVGraphSchema::GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
+{
+	const TAttribute<FText> Desc{LOCTEXT("ClassActionsMenuHeader", "Node Actions")};
+	FToolMenuSection& Section = Menu->AddSection("VGraphAssetGraphSchemaNodeActions", Desc);
+	Section.AddMenuEntry(FGenericCommands::Get().Delete);
+	Section.AddMenuEntry(FGenericCommands::Get().Cut);
+	Section.AddMenuEntry(FGenericCommands::Get().Copy);
+	Section.AddMenuEntry(FGenericCommands::Get().Duplicate);
+	Section.AddMenuEntry(FGraphEditorCommands::Get().BreakNodeLinks);
+}
+
+const FPinConnectionResponse UEdVGraphSchema::CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const
+{
+	const UEdVNode* ABase = Cast<UEdVNode>(A->GetOwningNode());
+	const UEdVNode* BBase = Cast<UEdVNode>(B->GetOwningNode());
+
+	if (A->Direction == B->Direction)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Not allowed"));
+	}
+
+	if (A->PinType.PinCategory != B->PinType.PinCategory)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Not match types"));
+	}
+
+	if (ABase->GetUniqueID() == BBase->GetUniqueID())
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Same node"));
+	}
+
+	return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT(""));
 }

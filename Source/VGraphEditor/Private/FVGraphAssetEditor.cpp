@@ -24,22 +24,25 @@ namespace
 }
 
 FVGraphAssetEditor::FVGraphAssetEditor() :
-	EditorGraph(nullptr),
-	EditorSettings(NewObject<UVGraphEditorSettings>())
+	EditorSettings(NewObject<UVGraphEditorSettings>()),
+	CurrentGraph(nullptr)
 {}
 
 void FVGraphAssetEditor::CreateEdGraph(UVGraph* Graph)
 {
-	EditorGraph = MakeShareable(CastChecked<UEdVGraph>(FBlueprintEditorUtils::CreateNewGraph(Graph, NAME_None, UEdVGraph::StaticClass(), UEdVGraphSchema::StaticClass())));
-	EditorGraph->SetVGraph(Graph);
-	EditorGraph->bAllowDeletion = false;
+	if(CurrentGraph->EditorGraph) return;
+	
+	CurrentGraph->EditorGraph = CastChecked<UEdVGraph>(FBlueprintEditorUtils::CreateNewGraph(Graph, NAME_None, UEdVGraph::StaticClass(), UEdVGraphSchema::StaticClass()));
+	CurrentGraph->EditorGraph->bAllowDeletion = false;
 
-	const UEdGraphSchema* Schema = EditorGraph->GetSchema();
-	Schema->CreateDefaultNodesForGraph(*EditorGraph);
+	const UEdGraphSchema* Schema = CurrentGraph->EditorGraph->GetSchema();
+	Schema->CreateDefaultNodesForGraph(*CurrentGraph->EditorGraph);
 }
 
 void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<IToolkitHost> InToolkitHost, UVGraph* Graph)
 {
+	CurrentGraph = Graph;
+	
 	CreateEdGraph(Graph);
 	
 	FGenericCommands::Register();
@@ -82,30 +85,30 @@ void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<ITo
 	
 	const bool bCreateDefaultStandaloneMenu = true;
 	const bool bCreateDefaultToolbar = true;
-	FAssetEditorToolkit::InitAssetEditor(Mode, InToolkitHost, VGraphEditorAppName, StandaloneDefaultLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, EditorGraph->GetVGraph(), false);
+	FAssetEditorToolkit::InitAssetEditor(Mode, InToolkitHost, VGraphEditorAppName, StandaloneDefaultLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, CurrentGraph, false);
 }
 
 void FVGraphAssetEditor::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
 	WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_SoundCueEditor", "Sound Cue Editor"));
-	auto WorkspaceMenuCategoryRef = WorkspaceMenuCategory.ToSharedRef();
-
-	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
-
+	const auto WorkspaceMenuCategoryRef = WorkspaceMenuCategory.ToSharedRef();
+	
 	InTabManager->RegisterTabSpawner( VGraphViewportID, FOnSpawnTab::CreateSP(this, &FVGraphAssetEditor::SpawnTab_GraphCanvas) )
 		.SetDisplayName( LOCTEXT("GraphCanvasTab", "Viewport") )
 		.SetGroup(WorkspaceMenuCategoryRef)
-		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "GraphEditor.EventGraph_16x"));
+		.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "GraphEditor.EventGraph_16x"));
 
 	InTabManager->RegisterTabSpawner( VGraphPropertyID, FOnSpawnTab::CreateSP(this, &FVGraphAssetEditor::SpawnTab_Properties) )
 		.SetDisplayName( LOCTEXT("DetailsTab", "Details") )
 		.SetGroup(WorkspaceMenuCategoryRef)
-		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Details"));
+		.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Details"));
 
 	InTabManager->RegisterTabSpawner( VGraphEditorSettingsID, FOnSpawnTab::CreateSP(this, &FVGraphAssetEditor::SpawnTab_Settings) )
 		.SetDisplayName( LOCTEXT("PaletteTab", "Palette") )
 		.SetGroup(WorkspaceMenuCategoryRef)
-		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "Kismet.Tabs.Palette"));
+		.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "Kismet.Tabs.Palette"));
+
+	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 }
 
 void FVGraphAssetEditor::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
@@ -135,6 +138,12 @@ FString FVGraphAssetEditor::GetWorldCentricTabPrefix() const
 FLinearColor FVGraphAssetEditor::GetWorldCentricTabColorScale() const
 {
 	return FLinearColor::Green;
+}
+
+void FVGraphAssetEditor::AddReferencedObjects(FReferenceCollector& Collector)
+{
+	Collector.AddReferencedObject(CurrentGraph);
+	Collector.AddReferencedObject(CurrentGraph->EditorGraph);
 }
 
 TSharedRef<SDockTab> FVGraphAssetEditor::SpawnTab_GraphCanvas(const FSpawnTabArgs& Args)
@@ -187,7 +196,7 @@ void FVGraphAssetEditor::CreateInternalWidgets()
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	PropertyWidget = PropertyModule.CreateDetailView(Args);
-	PropertyWidget->SetObject(EditorGraph->GetVGraph());
+	PropertyWidget->SetObject(CurrentGraph);
 	PropertyWidget->OnFinishedChangingProperties().AddSP(this, &FVGraphAssetEditor::OnFinishedChangingProperties);
 
 	EditorSettingsWidget = PropertyModule.CreateDetailView(Args);
@@ -204,9 +213,10 @@ void FVGraphAssetEditor::OnNodeDoubleClicked(UEdGraphNode* EdGraphNode)
 
 void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent)
 {
-	if(!EditorGraph->GetVGraph()) return;
+	if(!CurrentGraph) return;
+	if(!CurrentGraph->EditorGraph) return;
 
-	EditorGraph->GetSchema()->ForceVisualizationCacheClear();
+	CurrentGraph->EditorGraph->GetSchema()->ForceVisualizationCacheClear();
 }
 
 void FVGraphAssetEditor::CreateCommandList()
@@ -247,7 +257,7 @@ TSharedRef<SGraphEditor> FVGraphAssetEditor::CreateViewportWidget()
 		.AdditionalCommands(GraphEditorCommands)
 		.IsEditable(true)
 		.Appearance(AppearanceInfo)
-		.GraphToEdit(EditorGraph.Get())
+		.GraphToEdit(CurrentGraph->EditorGraph)
 		.GraphEvents(InEvents)
 		.AutoExpandActionMenu(true)
 		.ShowGraphStateOverlay(false);

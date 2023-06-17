@@ -22,4 +22,10 @@ private:
 	UVBaseNode* StartNode;
 	UPROPERTY(Instanced)
 	TArray<UVBaseNode*> Nodes;
+
+#if WITH_EDITORONLY_DATA
+public:
+	UPROPERTY()
+	UEdGraph* EditorGraph;
+#endif
 };
