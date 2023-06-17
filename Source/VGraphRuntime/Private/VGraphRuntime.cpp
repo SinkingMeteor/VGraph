@@ -1,4 +1,5 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// VGraph plugin copyright. All rights reserved.
+
 
 #include "VGraphRuntime.h"
 

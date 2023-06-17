@@ -1,4 +1,5 @@
-﻿// Snake Game
+﻿// VGraph plugin copyright. All rights reserved.
+
 
 #pragma once
 
@@ -14,4 +15,5 @@ class VGRAPHRUNTIME_API UVStartNode : public UVBaseNode
 	GENERATED_BODY()
 public:
 	virtual FText GetNodeName() override { return LOCTEXT("VGraph_StartNode", "Start Node"); }
+	virtual void GetPinData(TArray<FVGraphPinData>& DataArray) const override;
 };

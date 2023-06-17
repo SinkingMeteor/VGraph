@@ -1,4 +1,5 @@
-﻿// Snake Game
+﻿// VGraph plugin copyright. All rights reserved.
+
 
 
 #include "FVGraphAssetEditor.h"

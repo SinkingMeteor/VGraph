@@ -1,4 +1,5 @@
-﻿// Snake Game
+﻿// VGraph plugin copyright. All rights reserved.
+
 
 #pragma once
 
@@ -12,6 +13,15 @@ class UVGraph;
 class UEdGraphNode;
 #endif
 
+USTRUCT()
+struct FVGraphPinData
+{
+	GENERATED_BODY()
+public:
+	EEdGraphPinDirection Direction;
+	FName PinName;
+};
+
 UCLASS(Abstract)
 class VGRAPHRUNTIME_API UVBaseNode : public UObject
 {
@@ -19,14 +29,8 @@ class VGRAPHRUNTIME_API UVBaseNode : public UObject
 
 public:
 	virtual FText GetNodeName() { return FText{}; }
-	
-private:
+	virtual void GetPinData(TArray<FVGraphPinData>& DataArray) const {}	
+protected:
 	UPROPERTY()
 	UVGraph* ParentGraph;
-
-#if WITH_EDITORONLY_DATA
-public:
-	UPROPERTY()
-	UEdGraphNode* EditorNode;
-#endif
 };

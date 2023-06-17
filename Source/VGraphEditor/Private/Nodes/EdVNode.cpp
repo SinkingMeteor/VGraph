@@ -1,7 +1,9 @@
-﻿// Snake Game
+﻿// VGraph plugin copyright. All rights reserved.
+
 
 
 #include "Nodes/EdVNode.h"
+#include "Nodes/VBaseNode.h"
 
 UEdVNode::UEdVNode()
 {
@@ -10,8 +12,25 @@ UEdVNode::UEdVNode()
 
 void UEdVNode::AllocateDefaultPins()
 {
-	CreatePin(EEdGraphPinDirection::EGPD_Input, "MultipleNodes", FName{}, TEXT("In"));
-	CreatePin(EEdGraphPinDirection::EGPD_Output, "MultipleNodes", FName{}, TEXT("Out"));
+	check(VGraphNode)
+
+	TArray<FVGraphPinData> PinDataArray{};
+	VGraphNode->GetPinData(PinDataArray);
+
+	for(const FVGraphPinData& PinData : PinDataArray)
+	{
+		CreatePin(PinData.Direction, "MultipleNodes", FName{}, PinData.PinName);
+	}
+}
+
+FText UEdVNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
+{
+	if(!VGraphNode)
+	{
+		return Super::GetNodeTitle(TitleType);
+	}
+
+	return VGraphNode->GetNodeName();
 }
 
 

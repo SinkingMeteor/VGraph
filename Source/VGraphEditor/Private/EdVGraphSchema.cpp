@@ -1,4 +1,5 @@
-﻿// Snake Game
+﻿// VGraph plugin copyright. All rights reserved.
+
 
 
 #include "EdVGraphSchema.h"
@@ -33,11 +34,9 @@ UEdGraphNode* FVGraphSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, 
 	UVBaseNode* VNode = NewObject<UVBaseNode>(VGraph, NodeTemplate);
 	VGraph->AddNode(VNode);
 	
-	UEdVNode* EdVNode = NewObject<UEdVNode>(ParentGraph);
+	UEdVNode* EdVNode = NewObject<UEdVNode>(EdVGraph);
+	EdVNode->VGraphNode = VNode;
 
-	VNode->EditorNode = EdVNode;
-	
-	EdVNode->Rename(ToCStr(VNode->GetName()));
 	EdVGraph->AddNode(EdVNode, true, bSelectNewNode);
 	EdVGraph->NotifyGraphChanged();
 	
