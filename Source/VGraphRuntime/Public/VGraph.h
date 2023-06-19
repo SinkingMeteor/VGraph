@@ -18,6 +18,9 @@ class VGRAPHRUNTIME_API UVGraph : public UObject
 	GENERATED_BODY()
 public:
 	void AddNode(UVBaseNode* Node);
+	UVBaseNode* GetStartNode() const { return StartNode; }
+	void SetStartNode(UVBaseNode* InStartNode) { StartNode = InStartNode; }
+	void ClearGraph();
 private:
 	UPROPERTY(Instanced)
 	UVBaseNode* StartNode;

@@ -41,7 +41,8 @@ public class VGraphEditor : ModuleRules
 				"UnrealEd", 
 				"EditorStyle",
 				"GraphEditor",
-				"ToolMenus"
+				"ToolMenus",
+				"ApplicationCore"
 			}
 			);
 		

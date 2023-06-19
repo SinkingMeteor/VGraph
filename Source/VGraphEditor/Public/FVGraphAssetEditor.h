@@ -24,6 +24,7 @@ public:
 	virtual FString GetWorldCentricTabPrefix() const override;
 	virtual FLinearColor GetWorldCentricTabColorScale() const override;
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	virtual void SaveAsset_Execute() override;
 
 protected:
 	TSharedPtr<SGraphEditor> ViewportWidget;
@@ -63,9 +64,12 @@ private:
 	void PasteNodes();
 	bool CanPasteNodes() const;
 
+	void DeleteSelectedDuplicatableNodes();
 	void CutSelectedNodes();
 	bool CanCutNodes() const;
 
 	void DuplicateNodes();
 	bool CanDuplicateNodes() const;
+
+	FGraphPanelSelectionSet GetSelectedNodes() const;
 };
