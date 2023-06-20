@@ -28,9 +28,15 @@ class VGRAPHRUNTIME_API UVBaseNode : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual FText GetNodeName() { return FText{}; }
-	virtual void GetPinData(TArray<FVGraphPinData>& DataArray) const {}	
+	virtual FText GetNodeName() { return FText::GetEmpty(); }
+	virtual void GetPinData(TArray<FVGraphPinData>& DataArray) const {}
+	virtual void OnPropertiesChanged() {}
+	virtual FLinearColor GetNodeTitleColor() { return FLinearColor::Gray; }
+	void AddLinkedNode(UVBaseNode* LinkedNode);
+	void Clear();
 protected:
+	UPROPERTY()
+	TArray<UVBaseNode*> LinkedNodes; 
 	UPROPERTY()
 	UVGraph* ParentGraph;
 };

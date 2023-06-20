@@ -10,6 +10,16 @@ UEdVNode::UEdVNode()
 	bCanRenameNode = true;
 }
 
+FLinearColor UEdVNode::GetNodeTitleColor() const
+{
+	if(!VGraphNode)
+	{
+		return Super::GetNodeTitleColor();
+	}
+
+	return VGraphNode->GetNodeTitleColor();
+}
+
 void UEdVNode::AllocateDefaultPins()
 {
 	check(VGraphNode)

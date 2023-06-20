@@ -18,6 +18,7 @@ public:
 	UVBaseNode* VGraphNode;
 	
 	UEdVNode();
+	virtual FLinearColor GetNodeTitleColor() const override;
 	virtual void AllocateDefaultPins() override;
 	virtual bool GetCanRenameNode() const override { return true; }
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;

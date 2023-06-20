@@ -39,7 +39,6 @@ protected:
 	TSharedRef<SDockTab> SpawnTab_Settings(const FSpawnTabArgs& SpawnTabArgs);
 
 	void CreateEdGraph(UVGraph* Graph);
-	void BindGraphCommands();
 private:
 	UVGraph* CurrentGraph;
 
@@ -47,7 +46,6 @@ private:
 	void CreateInternalWidgets();
 	
 	void OnSelectedNodesChanged(const TSet<UObject*>& Objects);
-	void OnNodeDoubleClicked(UEdGraphNode* EdGraphNode);
 
 	void CreateCommandList();
 	TSharedRef<SGraphEditor> CreateViewportWidget();
@@ -64,7 +62,6 @@ private:
 	void PasteNodes();
 	bool CanPasteNodes() const;
 
-	void DeleteSelectedDuplicatableNodes();
 	void CutSelectedNodes();
 	bool CanCutNodes() const;
 

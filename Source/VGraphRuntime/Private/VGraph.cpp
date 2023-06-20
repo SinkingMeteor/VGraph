@@ -12,5 +12,13 @@ void UVGraph::AddNode(UVBaseNode* Node)
 void UVGraph::ClearGraph()
 {
 	StartNode = nullptr;
+
+	for (UVBaseNode* Node : Nodes)
+	{
+		if(!Node) continue;
+		
+		Node->Clear();
+	}
+	
 	Nodes.Empty();
 }

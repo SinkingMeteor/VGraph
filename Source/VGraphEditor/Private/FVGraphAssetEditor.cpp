@@ -21,7 +21,6 @@
 namespace
 {
 	const FName VGraphEditorAppName = FName(TEXT("VGraphEditorApp"));
-	
 	const FName VGraphPropertyID(TEXT("GenericGraphProperty"));
 	const FName VGraphViewportID(TEXT("Viewport"));
 	const FName VGraphEditorSettingsID(TEXT("GenericGraphEditorSettings"));
@@ -52,7 +51,6 @@ void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<ITo
 	FGenericCommands::Register();
 	FGraphEditorCommands::Register();
 	
-	BindGraphCommands();
 	CreateInternalWidgets();
 
 	const TSharedRef<FTabManager::FLayout> StandaloneDefaultLayout = FTabManager::NewLayout("VGraph_Layout_v1")
@@ -217,12 +215,27 @@ void FVGraphAssetEditor::CreateInternalWidgets()
 	EditorSettingsWidget->SetObject(EditorSettings);
 }
 
-void FVGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& Objects)
+void FVGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& SelectedNodes)
 {
-}
+	TArray<UObject*> Selections{};
 
-void FVGraphAssetEditor::OnNodeDoubleClicked(UEdGraphNode* EdGraphNode)
-{
+	for (UObject* SelectionEntry : SelectedNodes)
+	{
+		const UEdVNode* EdNode = Cast<UEdVNode>(SelectionEntry);
+		if(EdNode)
+		{
+			Selections.Add(EdNode->VGraphNode);
+		}
+	}
+
+	if (Selections.Num() == 0) 
+	{
+		PropertyWidget->SetObject(CurrentGraph);
+	}
+	else
+	{
+		PropertyWidget->SetObjects(Selections);
+	}
 }
 
 void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent)
@@ -231,6 +244,17 @@ void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEven
 	if(!CurrentGraph->EditorGraph) return;
 
 	CurrentGraph->EditorGraph->GetSchema()->ForceVisualizationCacheClear();
+
+	if(!ViewportWidget) return;
+
+	FGraphPanelSelectionSet SelectedNodes = ViewportWidget->GetSelectedNodes();
+	for (FGraphPanelSelectionSet::TConstIterator It{SelectedNodes}; It; ++It)
+	{
+		const UEdVNode* EdNode = Cast<UEdVNode>(*It);
+		if(!EdNode) continue;
+
+		EdNode->VGraphNode->OnPropertiesChanged();
+	}
 }
 
 void FVGraphAssetEditor::CreateCommandList()
@@ -265,7 +289,6 @@ TSharedRef<SGraphEditor> FVGraphAssetEditor::CreateViewportWidget()
 
 	SGraphEditor::FGraphEditorEvents InEvents;
 	InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FVGraphAssetEditor::OnSelectedNodesChanged);
-	InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FVGraphAssetEditor::OnNodeDoubleClicked);
 
 	return SNew(SGraphEditor)
 		.AdditionalCommands(GraphEditorCommands)
@@ -438,15 +461,10 @@ bool FVGraphAssetEditor::CanPasteNodes() const
 	return FEdGraphUtilities::CanImportNodesFromText(ViewportWidget->GetCurrentGraph(), ClipboardContent);
 }
 
-void FVGraphAssetEditor::DeleteSelectedDuplicatableNodes()
-{
-}
-
 void FVGraphAssetEditor::CutSelectedNodes()
 {
 	CopySelectedNodes();
 	DeleteSelectedNodes();
-	//DeleteSelectedDuplicatableNodes();
 }
 
 bool FVGraphAssetEditor::CanCutNodes() const
@@ -474,8 +492,4 @@ FGraphPanelSelectionSet FVGraphAssetEditor::GetSelectedNodes() const
 		SelectedNodes = ViewportWidget->GetSelectedNodes();
 	}
 	return SelectedNodes;
-}
-
-void FVGraphAssetEditor::BindGraphCommands()
-{
 }
