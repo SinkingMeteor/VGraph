@@ -23,15 +23,15 @@ void UEdVGraph::RebuildGraph(UVGraph* TargetGraph)
 			for(UEdGraphPin* LinkedPin : Pin->LinkedTo)
 			{
 				if(!LinkedPin) continue;
-				
-				UVBaseNode* LinkedNode = Cast<UVBaseNode>(LinkedPin->GetOwningNode());
-				if(!LinkedNode)
+
+				const UEdVNode* LinkedNode = Cast<UEdVNode>(LinkedPin->GetOwningNode());
+				if(!LinkedNode || !LinkedNode->VGraphNode)
 				{
 					UE_LOG(LogEdVGraph, Warning, TEXT("Something went wrong when trying to get pin's owner"))
 					continue;
 				}
 					
-				VEdNode->VGraphNode->AddLinkedNode(LinkedNode);
+				VEdNode->VGraphNode->AddLinkedNode(LinkedNode->VGraphNode);
 			}
 		}
 		

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SGraphNode.h"
 #include "UObject/Object.h"
 #include "VBaseNode.generated.h"
 
@@ -29,9 +30,12 @@ class VGRAPHRUNTIME_API UVBaseNode : public UObject
 
 public:
 	virtual FText GetNodeName() { return FText::GetEmpty(); }
+	virtual FText GetNodeTitle() { return GetNodeName(); }
 	virtual void GetPinData(TArray<FVGraphPinData>& DataArray) const {}
 	virtual void OnPropertiesChanged() {}
 	virtual FLinearColor GetNodeTitleColor() { return FLinearColor::Gray; }
+	virtual UVBaseNode* GetNextNode();
+	virtual FSlateWidgetClassData GetNodeWidgetType() { return SGraphNode::StaticWidgetClass(); }
 	void AddLinkedNode(UVBaseNode* LinkedNode);
 	void Clear();
 protected:

@@ -250,7 +250,7 @@ void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEven
 	FGraphPanelSelectionSet SelectedNodes = ViewportWidget->GetSelectedNodes();
 	for (FGraphPanelSelectionSet::TConstIterator It{SelectedNodes}; It; ++It)
 	{
-		const UEdVNode* EdNode = Cast<UEdVNode>(*It);
+		UEdVNode* EdNode = Cast<UEdVNode>(*It);
 		if(!EdNode) continue;
 
 		EdNode->VGraphNode->OnPropertiesChanged();

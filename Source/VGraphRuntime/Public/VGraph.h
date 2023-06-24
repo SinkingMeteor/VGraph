@@ -21,11 +21,17 @@ public:
 	UVBaseNode* GetStartNode() const { return StartNode; }
 	void SetStartNode(UVBaseNode* InStartNode) { StartNode = InStartNode; }
 	void ClearGraph();
+
+	bool IsValidGraph() const;
+	void Reset();
 private:
 	UPROPERTY(Instanced)
 	UVBaseNode* StartNode;
 	UPROPERTY(Instanced)
 	TArray<UVBaseNode*> Nodes;
+
+	UPROPERTY()
+	UVBaseNode* CurrentNode;
 
 #if WITH_EDITORONLY_DATA
 public:

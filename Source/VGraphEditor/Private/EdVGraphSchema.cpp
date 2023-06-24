@@ -43,7 +43,6 @@ UEdGraphNode* FVGraphSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, 
 	EdVNode->CreateNewGuid();
 	EdVNode->PostPlacedNewNode();
 	EdVNode->AllocateDefaultPins();
-	EdVNode->AutowireNewNode(FromPin);
 
 	EdVNode->NodePosX = Location.X;
 	EdVNode->NodePosY = Location.Y;
@@ -51,7 +50,7 @@ UEdGraphNode* FVGraphSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, 
 	EdVGraph->SetFlags(RF_Transactional);
 	EdVNode->SetFlags(RF_Transactional);
 	EdVNode->AutowireNewNode(FromPin);
-	
+
 	return EdVNode;
 }
 

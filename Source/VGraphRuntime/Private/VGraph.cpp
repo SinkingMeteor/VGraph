@@ -22,3 +22,16 @@ void UVGraph::ClearGraph()
 	
 	Nodes.Empty();
 }
+
+bool UVGraph::IsValidGraph() const
+{
+	if(!StartNode) return false;
+	if(Nodes.Num() == 0) return false;
+
+	return true;
+}
+
+void UVGraph::Reset()
+{
+	CurrentNode = StartNode;
+}

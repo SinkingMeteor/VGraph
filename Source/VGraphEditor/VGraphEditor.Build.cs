@@ -26,7 +26,7 @@ public class VGraphEditor : ModuleRules
 			new string[]
 			{
 				"Core", 
-				"VGraphRuntime",
+				"VGraphRuntime"
 			}
 			);
 			
@@ -42,7 +42,9 @@ public class VGraphEditor : ModuleRules
 				"EditorStyle",
 				"GraphEditor",
 				"ToolMenus",
-				"ApplicationCore"
+				"ApplicationCore",
+				"UnrealEd",
+				"KismetWidgets"
 			}
 			);
 		
