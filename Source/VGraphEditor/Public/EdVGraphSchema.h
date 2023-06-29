@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Nodes/EdVNode.h"
 #include "Nodes/VBaseNode.h"
 #include "EdVGraphSchema.generated.h"
 
@@ -16,9 +17,9 @@ public:
 	FVGraphSchemaAction_NewNode() = default;
 	FVGraphSchemaAction_NewNode(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, FText InKeywords = FText(), int32 InSectionID = 0);
 	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode) override;
-	void SetTemplate(TSubclassOf<UVBaseNode> InNodeTemplate) { NodeTemplate = InNodeTemplate; }
+	void SetTemplate(TSubclassOf<UEdVNode> InNodeTemplate) { EdNodeTemplate = InNodeTemplate; }
 private:
-	 TSubclassOf<UVBaseNode> NodeTemplate;
+	 TSubclassOf<UEdVNode> EdNodeTemplate;
 };
 
 UCLASS()

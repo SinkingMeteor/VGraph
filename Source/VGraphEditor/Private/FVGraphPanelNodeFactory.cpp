@@ -10,7 +10,6 @@ TSharedPtr<SGraphNode> FVGraphPanelNodeFactory::CreateNode(UEdGraphNode* Node) c
 {
 	UEdVNode* EdVNode = Cast<UEdVNode>(Node);
 	if(!EdVNode) return nullptr;
-
 	
-	return SNew(SVBaseNode, EdVNode);
+	return EdVNode->CreateSlateWidget();
 }

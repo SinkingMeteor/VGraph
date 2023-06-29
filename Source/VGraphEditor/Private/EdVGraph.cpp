@@ -45,5 +45,9 @@ void UEdVGraph::RebuildGraph(UVGraph* TargetGraph)
 			}
 			TargetGraph->SetStartNode(VEdNode->VGraphNode);
 		}
+
+		VEdNode->OnPostChangedProperties();
 	}
 }
+
+

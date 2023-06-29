@@ -69,4 +69,5 @@ private:
 	bool CanDuplicateNodes() const;
 
 	FGraphPanelSelectionSet GetSelectedNodes() const;
+	void UpdateEditorNodes(const TArray<UEdGraphNode*>& Nodes) const;
 };

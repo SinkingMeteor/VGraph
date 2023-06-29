@@ -31,10 +31,10 @@ UEdGraphNode* FVGraphSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, 
 	UEdVGraph* EdVGraph = Cast<UEdVGraph>(ParentGraph);
 	UVGraph* VGraph = CastChecked<UVGraph>(EdVGraph->GetOuter());
 
-	UVBaseNode* VNode = NewObject<UVBaseNode>(VGraph, NodeTemplate);
+	UEdVNode* EdVNode = NewObject<UEdVNode>(EdVGraph, EdNodeTemplate);
+	UVBaseNode* VNode = NewObject<UVBaseNode>(VGraph, EdVNode->GetAssetNodeType());
 	VGraph->AddNode(VNode);
 	
-	UEdVNode* EdVNode = NewObject<UEdVNode>(EdVGraph);
 	EdVNode->VGraphNode = VNode;
 
 	EdVGraph->AddNode(EdVNode, true, bSelectNewNode);
@@ -63,10 +63,10 @@ void UEdVGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& ContextMe
 	
 	for (TObjectIterator<UClass> It; It; ++It)
 	{
-		if (It->IsChildOf(UVBaseNode::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
+		if (It->IsChildOf(UEdVNode::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
 		{
-			TSubclassOf<UVBaseNode> NodeType = *It;
-			FText NodeName = NodeType.GetDefaultObject()->GetNodeName();
+			TSubclassOf<UEdVNode> NodeType = *It;
+			FText NodeName = NodeType.GetDefaultObject()->GetNodeTitle(ENodeTitleType::FullTitle);
 			
 			TSharedPtr<FVGraphSchemaAction_NewNode> NewNodeSchemaAction = MakeShared<FVGraphSchemaAction_NewNode>(CreateCategory, NodeName, Tooltip, 0);
 			NewNodeSchemaAction->SetTemplate(NodeType);

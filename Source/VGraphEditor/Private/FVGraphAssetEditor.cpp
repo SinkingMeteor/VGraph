@@ -154,7 +154,8 @@ void FVGraphAssetEditor::SaveAsset_Execute()
 		UEdVGraph* EdVGraph = Cast<UEdVGraph>(CurrentGraph->EditorGraph);
 		EdVGraph->RebuildGraph(CurrentGraph);		
 	}
-	
+
+	UpdateEditorNodes(CurrentGraph->EditorGraph->Nodes);
 	FAssetEditorToolkit::SaveAsset_Execute();
 }
 
@@ -201,6 +202,7 @@ TSharedRef<SDockTab> FVGraphAssetEditor::SpawnTab_Settings(const FSpawnTabArgs& 
 void FVGraphAssetEditor::CreateInternalWidgets()
 {
 	ViewportWidget = CreateViewportWidget();
+	UpdateEditorNodes(CurrentGraph->EditorGraph->Nodes);
 
 	FDetailsViewArgs Args;
 	Args.bHideSelectionTip = true;
@@ -247,14 +249,17 @@ void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEven
 
 	if(!ViewportWidget) return;
 
-	FGraphPanelSelectionSet SelectedNodes = ViewportWidget->GetSelectedNodes();
+	TArray<UEdGraphNode*> EditorNodes{};
+	const FGraphPanelSelectionSet SelectedNodes = ViewportWidget->GetSelectedNodes();
 	for (FGraphPanelSelectionSet::TConstIterator It{SelectedNodes}; It; ++It)
 	{
 		UEdVNode* EdNode = Cast<UEdVNode>(*It);
 		if(!EdNode) continue;
 
-		EdNode->VGraphNode->OnPropertiesChanged();
+		EditorNodes.Add(EdNode);
 	}
+
+	UpdateEditorNodes(EditorNodes);
 }
 
 void FVGraphAssetEditor::CreateCommandList()
@@ -492,4 +497,14 @@ FGraphPanelSelectionSet FVGraphAssetEditor::GetSelectedNodes() const
 		SelectedNodes = ViewportWidget->GetSelectedNodes();
 	}
 	return SelectedNodes;
+}
+
+void FVGraphAssetEditor::UpdateEditorNodes(const TArray<UEdGraphNode*>& Nodes) const
+{
+	for (UEdGraphNode* Node : Nodes)
+	{
+		UEdVNode* EdVNode = Cast<UEdVNode>(Node);
+		if(!EdVNode) continue;
+		EdVNode->OnPostChangedProperties();
+	}
 }

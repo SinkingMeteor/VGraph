@@ -15,7 +15,7 @@ class VGRAPHRUNTIME_API UVPhraseNode : public UVBaseNode
 	GENERATED_BODY()
 public:
 	virtual FText GetNodeName() override;
-	virtual FText GetNodeTitle() override;
+	virtual FText GetNodeDisplayText() override;
 	virtual FLinearColor GetNodeTitleColor() override { return FLinearColor::Blue; }
 	virtual void GetPinData(TArray<FVGraphPinData>& DataArray) const override;
 protected:

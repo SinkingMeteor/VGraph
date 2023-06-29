@@ -15,6 +15,6 @@ class VGRAPHEDITOR_API UVGraphEditorSettings : public UObject
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditDefaultsOnly, Category="Test")
-	float FooValue = 10.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Visual")
+	float TestValue = 10.0f;
 };

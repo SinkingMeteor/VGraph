@@ -7,6 +7,10 @@
 
 class VGRAPHEDITOR_API SVReplicaNode : public SVBaseNode
 {
-protected:
-	TSharedPtr<STextBlock> NodeTextBlock;
+public:
+	virtual void UpdateGraphNode() override;
+	virtual void CreateBelowWidgetControls(TSharedPtr<SVerticalBox> MainBox) override;
+	void SetText(const FText& NewText);
+private:
+	TSharedPtr<STextBlock> NodeInfoBlock;
 };

@@ -35,12 +35,13 @@ void UEdVNode::AllocateDefaultPins()
 
 FText UEdVNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-	if(!VGraphNode)
-	{
-		return Super::GetNodeTitle(TitleType);
-	}
+	return FText::FromString(GetAssetNodeType()->GetName());
+}
 
-	return VGraphNode->GetNodeName();
+FText UEdVNode::GetNodeDisplayText() const
+{
+	if(!VGraphNode) return GetNodeTitle(ENodeTitleType::FullTitle);
+	return VGraphNode->GetNodeDisplayText();
 }
 
 

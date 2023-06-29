@@ -10,7 +10,7 @@ FText UVPhraseNode::GetNodeName()
 	return LOCTEXT("VGraph_PhraseNode", "Phrase Node");
 }
 
-FText UVPhraseNode::GetNodeTitle()
+FText UVPhraseNode::GetNodeDisplayText()
 {
 	if(DialogueParticipantData.IsValid())
 	{
