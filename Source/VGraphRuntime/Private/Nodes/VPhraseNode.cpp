@@ -14,7 +14,7 @@ FText UVPhraseNode::GetNodeDisplayText()
 {
 	if(DialogueParticipantData.IsValid())
 	{
-		const FText ParticipantDisplayName = DialogueParticipantData.Get()->GetParticipantDisplayName();
+		const FText& ParticipantDisplayName = DialogueParticipantData.Get()->GetParticipantDisplayName();
 		return FText::Format(LOCTEXT("VGraph_PhraseNode_Title", "{0}: {1}"), ParticipantDisplayName, PhraseText);
 	}
 	

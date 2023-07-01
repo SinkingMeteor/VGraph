@@ -43,6 +43,7 @@ private:
 	UVGraph* CurrentGraph;
 
 	void OnFinishedChangingProperties(const FPropertyChangedEvent& PropertyChangedEvent);
+	void OnFinishedChangingEditorSettingsProperties(const FPropertyChangedEvent& PropertyChangedEvent);
 	void CreateInternalWidgets();
 	
 	void OnSelectedNodesChanged(const TSet<UObject*>& Objects);

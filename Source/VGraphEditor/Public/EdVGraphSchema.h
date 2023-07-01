@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "VGraphEditorSettings.h"
 #include "Nodes/EdVNode.h"
 #include "Nodes/VBaseNode.h"
 #include "EdVGraphSchema.generated.h"
@@ -26,7 +27,7 @@ UCLASS()
 class VGRAPHEDITOR_API UEdVGraphSchema : public UEdGraphSchema
 {
 	GENERATED_BODY()
-	
+
 private:
 	virtual void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
 	virtual void GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const override;

@@ -52,6 +52,9 @@ void FVGraphAssetEditor::InitAssetEditor(EToolkitMode::Type Mode, TSharedPtr<ITo
 	FGraphEditorCommands::Register();
 	
 	CreateInternalWidgets();
+	
+	UEdVGraph* EdVGraph = CastChecked<UEdVGraph>(CurrentGraph->EditorGraph);
+	EdVGraph->SetSettings(EditorSettings);
 
 	const TSharedRef<FTabManager::FLayout> StandaloneDefaultLayout = FTabManager::NewLayout("VGraph_Layout_v1")
 	->AddArea
@@ -215,6 +218,7 @@ void FVGraphAssetEditor::CreateInternalWidgets()
 
 	EditorSettingsWidget = PropertyModule.CreateDetailView(Args);
 	EditorSettingsWidget->SetObject(EditorSettings);
+	EditorSettingsWidget->OnFinishedChangingProperties().AddSP(this, &FVGraphAssetEditor::OnFinishedChangingEditorSettingsProperties);
 }
 
 void FVGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& SelectedNodes)
@@ -260,6 +264,11 @@ void FVGraphAssetEditor::OnFinishedChangingProperties(const FPropertyChangedEven
 	}
 
 	UpdateEditorNodes(EditorNodes);
+}
+
+void FVGraphAssetEditor::OnFinishedChangingEditorSettingsProperties(const FPropertyChangedEvent& PropertyChangedEvent)
+{
+	UpdateEditorNodes(CurrentGraph->EditorGraph->Nodes);
 }
 
 void FVGraphAssetEditor::CreateCommandList()

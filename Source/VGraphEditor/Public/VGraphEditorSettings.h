@@ -15,6 +15,8 @@ class VGRAPHEDITOR_API UVGraphEditorSettings : public UObject
 {
 	GENERATED_BODY()
 public:
+	int32 GetMaxTipLength() const { return MaxTipLength; }
+protected:
 	UPROPERTY(EditDefaultsOnly, Category="Visual")
-	float TestValue = 10.0f;
+	int32 MaxTipLength = 20;
 };

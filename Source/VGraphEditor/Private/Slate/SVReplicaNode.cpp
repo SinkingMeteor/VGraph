@@ -11,21 +11,22 @@
 #include "Nodes/EdVNode.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
-
 void SVReplicaNode::UpdateGraphNode()
 {
 	NodeInfoBlock.Reset();
 	NodeInfoBlock = SNew(STextBlock);
-
-	if(GraphNode)
-	{
-		UEdVNode* EdVNode = Cast<UEdVNode>(GraphNode);
-		if(EdVNode)
-		{
-			NodeInfoBlock->SetText(EdVNode->GetNodeDisplayText());
-		}
-	}
+	NodeInfoBlock->SetWrappingPolicy(ETextWrappingPolicy::DefaultWrapping);
+	NodeInfoBlock->SetAutoWrapText(true);
 	
+	if(!GraphNode)
+	{
+		SGraphNode::UpdateGraphNode();
+		return;
+	}
+
+	const UEdVNode* EdVNode = CastChecked<UEdVNode>(GraphNode);
+	SetFormattedTipText(EdVNode->GetNodeDisplayText());
+
 	SGraphNode::UpdateGraphNode();
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -50,9 +51,33 @@ void SVReplicaNode::CreateBelowWidgetControls(TSharedPtr<SVerticalBox> MainBox)
 	];
 }
 
-void SVReplicaNode::SetText(const FText& NewText)
+void SVReplicaNode::SetText(const FText& NewText) const
+{
+	SetFormattedTipText(NewText);
+}
+
+const UVGraphEditorSettings* SVReplicaNode::GetEditorSettings() const
+{
+	const UEdVGraph* EdVGraph = CastChecked<UEdVGraph>(GraphNode->GetOuter());
+	const UVGraphEditorSettings* EditorSettings = EdVGraph->GetEditorSettings();
+
+	return EditorSettings;
+}
+
+void SVReplicaNode::SetFormattedTipText(const FText& Text) const
 {
 	if(!NodeInfoBlock) return;
 	
-	NodeInfoBlock->SetText(NewText);
+	const UVGraphEditorSettings* EditorSettings = GetEditorSettings();
+	check(EditorSettings)
+	
+	FString TipText = Text.ToString();
+
+	const int32 MaxTipLength = EditorSettings->GetMaxTipLength();
+	if(MaxTipLength < TipText.Len())
+	{
+		TipText = TipText.Mid(0, MaxTipLength);
+	}
+	
+	NodeInfoBlock->SetText(FText::FromString(TipText));
 }
